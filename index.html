@@ -3,415 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Universe</title>
+    <title>Aditya & Akriti | The Wedding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Great+Vibes&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
     
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@200;400&family=Great+Vibes&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <style>
+        /* --- CSS STYLES --- */
         :root {
-            --primary: #ffb7b2;
-            --bg: #0a0a0a;
-            --glass: rgba(255, 255, 255, 0.05);
-            --neon: 0 0 10px rgba(255, 183, 178, 0.8), 0 0 20px rgba(255, 183, 178, 0.4);
+            --gold: #FFD700;
+            --dark: #111;
+            --text: #fff;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            background-color: var(--bg);
-            color: white;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            color: var(--text);
             font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
+            overflow: hidden; /* No scrolling, this is an app */
         }
 
-        /* --- BACKGROUND STARS --- */
-        #star-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+        /* 3D Canvas */
+        #ceremony-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
-        /* --- SECTIONS --- */
-        section {
-            min-height: 100vh;
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through to canvas when needed */
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        /* --- HERO SECTION --- */
-        .hero-title {
-            font-family: 'Cinzel', serif;
-            font-size: 3rem;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            animation: fadeIn 2s ease-in;
-        }
-
-        .subtitle {
-            font-family: 'Great Vibes', cursive;
-            font-size: 2rem;
-            color: var(--primary);
-            margin-top: 10px;
-            text-shadow: var(--neon);
-        }
-
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            animation: bounce 2s infinite;
-            opacity: 0.7;
-        }
-
-        /* --- TIMER SECTION --- */
-        .timer-container {
-            background: var(--glass);
-            padding: 2rem;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-top: 2rem;
-        }
-
-        .timer {
-            display: flex;
-            gap: 20px;
-            font-size: 1.5rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
             justify-content: center;
+            background: radial-gradient(circle, transparent 0%, rgba(0,0,0,0.8) 100%);
         }
 
-        .time-box span {
-            display: block;
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        /* --- GALLERY SECTION --- */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            width: 100%;
-            max-width: 800px;
-            margin-top: 2rem;
-        }
-
-        .photo-card {
-            background: white;
-            padding: 10px 10px 30px 10px;
-            color: black;
-            transform: rotate(-5deg);
-            transition: transform 0.3s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-
-        .photo-card:nth-child(even) { transform: rotate(3deg); }
-        .photo-card:hover { transform: scale(1.1) rotate(0deg); z-index: 10; }
-        
-        .photo-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            background: #ddd; /* Placeholder color */
-        }
-
-        /* --- PROMISE / FINGERPRINT SECTION --- */
-        .fingerprint-container {
-            position: relative;
-            width: 100px;
-            height: 100px;
-            margin: 2rem auto;
-            cursor: pointer;
-        }
-
-        .fingerprint-icon {
-            font-size: 4rem;
-            color: rgba(255, 255, 255, 0.3);
-            transition: color 0.3s;
-        }
-
-        .fingerprint-ring {
-            position: absolute;
-            top: -10px; left: -10px;
-            width: 120px; height: 120px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--primary);
-            animation: spin 1s linear infinite;
-            display: none;
-        }
-
-        .hold-instruction {
-            margin-top: 1rem;
-            font-size: 0.9rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Hidden Letter */
-        .love-letter {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 100;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        /* Stages */
+        .stage {
             text-align: center;
-            padding: 2rem;
-        }
-
-        .love-letter h2 {
-            font-family: 'Great Vibes', cursive;
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 2rem;
-        }
-        
-        .love-letter p {
-            font-size: 1.2rem;
-            line-height: 1.8;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            position: absolute;
+            width: 100%;
             max-width: 600px;
-            margin-bottom: 1rem;
+            padding: 20px;
         }
 
-        /* --- MUSIC PLAYER --- */
-        .music-player {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--glass);
-            backdrop-filter: blur(5px);
-            padding: 10px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid rgba(255,255,255,0.2);
-            z-index: 50;
+        .stage.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        h1 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 4rem;
+            color: var(--gold);
+            margin: 0;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+
+        /* Buttons */
+        .btn-wedding {
+            background: transparent;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Cinzel', serif;
             cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 20px;
+            background: rgba(0,0,0,0.5);
         }
 
-        .music-bars {
-            display: flex;
-            gap: 3px;
-            height: 15px;
+        .btn-wedding:hover {
+            background: var(--gold);
+            color: var(--dark);
+            box-shadow: 0 0 30px var(--gold);
+            transform: scale(1.05);
         }
 
-        .bar {
-            width: 3px;
-            background: var(--primary);
-            animation: equalize 1s infinite;
+        /* The Certificate */
+        #certificate {
+            background: #fff;
+            color: #222;
+            padding: 40px;
+            border: 10px double var(--gold);
+            border-radius: 5px;
+            transform: scale(0.8);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.2);
+            display: none; /* Hidden until end */
         }
-        .bar:nth-child(2) { animation-delay: 0.2s; }
-        .bar:nth-child(3) { animation-delay: 0.4s; }
-
-        .play-paused .bar { animation-play-state: paused; height: 5px; }
-
-        /* --- ANIMATIONS --- */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes equalize { 0% { height: 5px; } 50% { height: 15px; } 100% { height: 5px; } }
+        
+        #certificate h1 { color: #222; font-size: 3rem; text-shadow: none; }
+        #certificate p { font-family: 'Cinzel', serif; margin: 10px 0; }
+        .signature {
+            border-top: 1px solid #000;
+            width: 200px;
+            margin: 30px auto 0;
+            padding-top: 5px;
+            font-size: 0.8rem;
+            font-family: 'Montserrat', sans-serif;
+        }
 
     </style>
 </head>
 <body>
 
-    <canvas id="star-canvas"></canvas>
+    <canvas id="ceremony-canvas"></canvas>
 
-    <div class="music-player" id="musicBtn">
-        <div class="music-bars play-paused">
-            <div class="bar"></div>
-            <div class="bar"></div>
-            <div class="bar"></div>
+    <div id="ui-layer">
+        
+        <div id="stage-1" class="stage active">
+            <h2>The Virtual Altar</h2>
+            <h1>Aditya & Akriti</h1>
+            <br>
+            <p>Do you, Aditya, take Akriti to be your lawfully wedded wife, to have and to hold, from this day forward?</p>
+            <button class="btn-wedding" onclick="startCeremony()">I Do</button>
         </div>
-        <span>Our Song</span>
-        <audio id="audio" loop>
-            <source src="https://www.bensound.com/bensound-music/bensound-love.mp3" type="audio/mp3">
-        </audio>
+
+        <div id="stage-2" class="stage">
+            <h2>The Exchange</h2>
+            <p>The rings symbolize eternity.</p>
+            <p style="font-size: 0.9rem; opacity: 0.8;">(Click the button to exchange rings)</p>
+            <button class="btn-wedding" onclick="exchangeRings()">Place Ring</button>
+        </div>
+
+        <div id="stage-3" class="stage">
+            <div id="certificate">
+                <h1>Certificate of Marriage</h1>
+                <p>This certifies that</p>
+                <h2 style="font-size: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">Aditya & Akriti</h2>
+                <p>Were united in virtual matrimony on</p>
+                <p id="wedding-date" style="font-weight: bold; font-size: 1.2rem;"></p>
+                <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+                    <div class="signature">Aditya Signature</div>
+                    <div class="signature">Akriti Signature</div>
+                </div>
+            </div>
+            <br>
+            <h2 style="color: var(--gold)">Just Married!</h2>
+        </div>
     </div>
 
-    <section>
-        <h1 class="hero-title">To My Universe</h1>
-        <p class="subtitle">"I will stay until my last breath"</p>
-        <div class="scroll-indicator">
-            <i class="fas fa-chevron-down"></i>
-        </div>
-    </section>
-
-    <section>
-        <h2>Every second with you counts</h2>
-        <div class="timer-container">
-            <div class="timer" id="timer">
-                <div class="time-box"><span id="days">00</span>Days</div>
-                <div class="time-box"><span id="hours">00</span>Hours</div>
-                <div class="time-box"><span id="minutes">00</span>Mins</div>
-                <div class="time-box"><span id="seconds">00</span>Secs</div>
-            </div>
-        </div>
-        <p style="margin-top: 1rem; opacity: 0.7;">Since we began</p>
-    </section>
-
-    <section>
-        <h2>Fragments of Us</h2>
-        <div class="gallery-grid">
-            <div class="photo-card">
-                <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400" alt="Memory">
-                <p>The Beginning</p>
-            </div>
-            <div class="photo-card">
-                <img src="data:image/jpeg;base64,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" alt="Memory">
-                <p>Silly Times</p>
-            </div>
-            <div class="photo-card">
-                <img src="https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?w=400" alt="Memory">
-                <p>My Favorite</p>
-            </div>
-        </div>
-    </section>
-
-    <section>
-        <h2>A Promise for Eternity</h2>
-        <p style="max-width: 400px; margin-bottom: 2rem;">
-            Some things are temporary, but my commitment to you is absolute.
-        </p>
-
-        <div class="fingerprint-container" id="scanner">
-            <div class="fingerprint-ring"></div>
-            <i class="fas fa-fingerprint fingerprint-icon"></i>
-        </div>
-        <p class="hold-instruction">Hold to Accept Promise</p>
-    </section>
-
-    <div class="love-letter" id="finalLetter">
-        <h2>I  Won't Leave.</h2>
-        <p>No matter how tough the times get, no matter how much negativity holds us, You will remain everything to me. </p>
-        <p>I am not going anywhere.
-
-My love will last until I die❤️.
-
-You are the best thing that ever happened to me..</p>
-        <p>I love you.</p>
-        <p style="margin-top: 3rem; font-size: 3rem;">❤️</p>
-        <button onclick="location.reload()" style="margin-top:2rem; background:transparent; border:1px solid white; color:white; padding:10px 20px; border-radius:20px; cursor:pointer;">Replay</button>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <script>
-        // --- 1. CONFIGURATION ---
-        const startDate = new Date("2025-12-07"); // CHANGE THIS TO YOUR DATE
+        // --- 1. THREE.JS SETUP (The Visuals) ---
+        const canvas = document.querySelector('#ceremony-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        
+        // Lighting
+        const pointLight = new THREE.PointLight(0xFFD700, 2, 100);
+        pointLight.position.set(0, 5, 5);
+        scene.add(pointLight);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-        // --- 2. MUSIC PLAYER ---
-        const musicBtn = document.getElementById('musicBtn');
-        const audio = document.getElementById('audio');
-        const bars = document.querySelector('.music-bars');
-        let isPlaying = false;
-
-        musicBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                audio.pause();
-                bars.classList.add('play-paused');
-            } else {
-                audio.play();
-                bars.classList.remove('play-paused');
-            }
-            isPlaying = !isPlaying;
+        // Create Materials
+        const goldMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xFFD700, metalness: 0.9, roughness: 0.1 
+        });
+        const diamondMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xE0FFFF, metalness: 0.9, roughness: 0.0, transparent: true, opacity: 0.9 
         });
 
-        // --- 3. TIMER LOGIC ---
-        function updateTimer() {
-            const now = new Date();
-            const diff = now - startDate;
+        // Create Ring 1 (Aditya's Ring - Gold)
+        const ring1Geo = new THREE.TorusGeometry(1.2, 0.15, 16, 100);
+        const ring1 = new THREE.Mesh(ring1Geo, goldMaterial);
+        ring1.position.x = -3; // Start Left
+        scene.add(ring1);
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((diff / 1000 / 60) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
+        // Create Ring 2 (Akriti's Ring - Diamond/Silver)
+        const ring2Geo = new THREE.TorusGeometry(1.0, 0.12, 16, 100);
+        const ring2 = new THREE.Mesh(ring2Geo, diamondMaterial);
+        ring2.position.x = 3; // Start Right
+        scene.add(ring2);
 
-            document.getElementById('days').innerText = days < 10 ? '0' + days : days;
-            document.getElementById('hours').innerText = hours < 10 ? '0' + hours : hours;
-            document.getElementById('minutes').innerText = minutes < 10 ? '0' + minutes : minutes;
-            document.getElementById('seconds').innerText = seconds < 10 ? '0' + seconds : seconds;
-        }
-        setInterval(updateTimer, 1000);
+        camera.position.z = 5;
 
-        // --- 4. FINGERPRINT SCANNER ---
-        const scanner = document.getElementById('scanner');
-        const ring = scanner.querySelector('.fingerprint-ring');
-        const icon = scanner.querySelector('.fingerprint-icon');
-        const letter = document.getElementById('finalLetter');
-        let holdTimer;
-
-        // Mouse/Touch Events
-        const startScan = (e) => {
-            e.preventDefault();
-            ring.style.display = 'block';
-            icon.style.color = '#ffb7b2';
+        // Animation Loop
+        function animate() {
+            requestAnimationFrame(animate);
+            // Idle rotation
+            ring1.rotation.y += 0.01;
+            ring1.rotation.x += 0.005;
             
-            holdTimer = setTimeout(() => {
-                // Success!
-                letter.style.display = 'flex';
-                letter.style.animation = 'fadeIn 1s forwards';
-            }, 2000); // Hold for 2 seconds
-        };
+            ring2.rotation.y -= 0.01;
+            ring2.rotation.x -= 0.005;
 
-        const stopScan = () => {
-            clearTimeout(holdTimer);
-            ring.style.display = 'none';
-            icon.style.color = 'rgba(255,255,255,0.3)';
-        };
-
-        scanner.addEventListener('mousedown', startScan);
-        scanner.addEventListener('touchstart', startScan);
-        scanner.addEventListener('mouseup', stopScan);
-        scanner.addEventListener('touchend', stopScan);
-        scanner.addEventListener('mouseleave', stopScan);
-
-        // --- 5. BACKGROUND STARS ---
-        const canvas = document.getElementById('star-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let stars = [];
-        for(let i=0; i<200; i++) {
-            stars.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: Math.random() * 2,
-                speed: Math.random() * 0.5
-            });
+            renderer.render(scene, camera);
         }
+        animate();
 
-        function animateStars() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'white';
-            stars.forEach(star => {
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fill();
-                star.y -= star.speed;
-                if(star.y < 0) star.y = canvas.height;
-            });
-            requestAnimationFrame(animateStars);
-        }
-        animateStars();
-
+        // Window Resize
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+        // --- 2. GAMEPLAY LOGIC ---
+
+        function startCeremony() {
+            // Fade out Stage 1, Fade in Stage 2
+            document.getElementById('stage-1').classList.remove('active');
+            setTimeout(() => {
+                document.getElementById('stage-2').classList.add('active');
+            }, 1000);
+
+            // Move Rings closer using GSAP
+            gsap.to(ring1.position, { x: -1.5, duration: 2, ease: "power2.out" });
+            gsap.to(ring2.position, { x: 1.5, duration: 2, ease: "power2.out" });
+        }
+
+        function exchangeRings() {
+            // Fade out Stage 2
+            document.getElementById('stage-2').classList.remove('active');
+
+            // 3D Animation: Rings merge and lock
+            const tl = gsap.timeline({
+                onComplete: showCertificate
+            });
+
+            // Move to center
+            tl.to(ring1.position, { x: 0, duration: 1.5, ease: "back.in(1.7)" }, "merge");
+            tl.to(ring2.position, { x: 0, duration: 1.5, ease: "back.in(1.7)" }, "merge");
+
+            // Rotate to interlock
+            tl.to(ring1.rotation, { x: Math.PI / 2, y: 0, duration: 1 }, "lock");
+            tl.to(ring2.rotation, { x: Math.PI / 2, y: Math.PI / 2, duration: 1 }, "lock");
+            
+            // Glow effect (scale up slightly)
+            tl.to([ring1.scale, ring2.scale], { x: 1.2, y: 1.2, z: 1.2, duration: 0.5, yoyo: true, repeat: 1 });
+        }
+
+        function showCertificate() {
+            // Generate Date
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('wedding-date').innerText = now.toLocaleDateString('en-US', options);
+
+            // Show Certificate UI
+            document.getElementById('certificate').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('stage-3').classList.add('active');
+                fireConfetti();
+            }, 500);
+        }
+
+        // --- 3. CELEBRATION (Confetti) ---
+        function fireConfetti() {
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            const random = (min, max) => Math.random() * (max - min) + min;
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                // since particles fall down, start a bit higher than random
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
     </script>
 </body>
 </html>
